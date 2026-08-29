@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NBT-SE</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+</head>
+
+<body>
+
+<div class="wrap">
+
+    <header class="app-header">
+        <div class="brand">
+            <div>
+                <h1>NBT Structure Editor</h1>
+            </div>
+        </div>
+    </header>
+
+    <div id="status"></div>
+
+    <section id="dropzone">
+        <div class="icon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <h2>Drop a .nbt structure file here</h2>
+
+        <p>
+            Or browse for a file.
+        </p>
+
+        <button class="browse-btn" id="browse-btn">
+            Choose file…
+        </button>
+
+        <input type="file" id="file-input" accept=".nbt">
+    </section>
+
+
+    <!-- MAIN WORKSPACE -->
+    <main id="workspace">
+
+        <div class="file-bar">
+            <div>
+                <div class="fname" id="fname">—</div>
+                <div class="fmeta" id="fmeta">—</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn ghost small" id="load-other-btn">
+                    Load different file
+                </button>
+
+                <button class="btn primary" id="download-btn" disabled>
+                    Download edited .nbt
+                </button>
+            </div>
+        </div>
+
+
+        <div class="tool-tabs">
+            <button class="tool-tab active" data-tool="blocks">
+                Blocks
+            </button>
+
+            <button class="tool-tab" data-tool="preview">
+                Preview
+            </button>
+
+            <button class="tool-tab" data-tool="rotate">
+                Rotate
+            </button>
+
+            <button class="tool-tab" data-tool="nbt">
+                NBT
+            </button>
+        </div>
+
+
+        <section class="tool-panel active" id="tool-blocks">
+
+            <div class="toolbar">
+                <input
+                        type="text"
+                        id="search"
+                        placeholder="Filter block IDs…"
+                >
+
+                <div class="sort-toggle">
+                    <button data-sort="count" class="active">
+                        by count
+                    </button>
+
+                    <button data-sort="name">
+                        a–z
+                    </button>
+                </div>
+            </div>
+
+            <div id="block-table"></div>
+
+            <div id="empty-search" style="display:none;">
+                No block IDs match that filter.
+            </div>
+
+            <div id="changelog-wrap" style="display:none;">
+                <h3>Renames applied this session</h3>
+                <div id="changelog"></div>
+            </div>
+
+        </section>
+
+
+        <section class="tool-panel" id="tool-preview">
+
+            <div class="grid2">
+
+                <div class="panel">
+
+                    <h3>Layer preview</h3>
+
+                    <div class="layer-controls">
+                        <span id="layer-label">
+                            Y layer 0
+                        </span>
+
+                        <input
+                                type="range"
+                                id="layer-slider"
+                                min="0"
+                                max="0"
+                                value="0"
+                        >
+                    </div>
+
+                    <div id="preview-canvas-wrap">
+                        <canvas
+                                id="preview-canvas"
+                                width="256"
+                                height="256">
+                        </canvas>
+                    </div>
+
+                    <div class="compass">
+                        <span>N ↑ (−Z)</span>
+                        <span>E → (+X)</span>
+                    </div>
+
+                    <div class="preview-note">
+                        Colored cells represent blocks. Colors are generated
+                        from the block ID.
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <h3>Structure</h3>
+
+                    <div class="dims" id="dims">
+                        —
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================================
+             ROTATION
+             ====================================================== -->
+
+        <section class="tool-panel" id="tool-rotate">
+
+            <div class="panel">
+
+                <h3>Rotate structure</h3>
+
+                <div class="rot-controls">
+
+                    <div class="rot-btn-row">
+
+                        <button
+                                class="rot-btn"
+                                id="rot-ccw90"
+                                title="Rotate 90° counter-clockwise">
+                            −90°
+                        </button>
+
+                        <button
+                                class="rot-btn"
+                                id="rot-90"
+                                title="Rotate 90° clockwise">
+                            +90°
+                        </button>
+
+                    </div>
+
+                    <button
+                            class="rot-btn"
+                            id="rot-180">
+                        180°
+                    </button>
+
+                </div>
+
+                <div class="current-rot">
+                    current:
+                    <span class="deg" id="current-deg">0°</span>
+                </div>
+
+                <button
+                        class="reset-link"
+                        id="reset-btn"
+                        disabled>
+                    reset to original orientation
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <section class="tool-panel" id="tool-nbt">
+
+            <div class="panel">
+
+                <h3>Raw NBT</h3>
+
+                <div id="nbt-tree"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

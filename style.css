@@ -19,8 +19,6 @@ input {
     margin: 28px auto;
 }
 
-/* Header */
-
 .app-header,
 .file-bar {
     display: flex;
@@ -56,8 +54,6 @@ h1 {
     font-size: 11px;
     opacity: .45;
 }
-
-/* General UI */
 
 .btn,
 .browse-btn,
@@ -97,8 +93,6 @@ h1 {
     border-color: transparent;
 }
 
-/* Status */
-
 #status {
     display: none;
     margin-bottom: 14px;
@@ -108,8 +102,6 @@ h1 {
 #status.show {
     display: block;
 }
-
-/* Dropzone */
 
 #dropzone {
     padding: 60px 24px;

@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NBT Rotator</title>
+
+    <link rel="stylesheet" href="../style/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet"
+    >
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+</head>
+
+<body>
+
+<div class="wrap">
+
+    <header class="app-header">
+
+        <div class="brand">
+
+            <div class="brand-mark"></div>
+
+            <div>
+                <h1>NBT Rotator</h1>
+
+                <div class="subtitle">
+                    rotate structure NBT files · MC 1.21.1
+                </div>
+            </div>
+
+        </div>
+
+        <div class="badge">
+            local only
+        </div>
+
+    </header>
+
+    <div id="status"></div>
+
+    <div id="dropzone">
+
+        <div class="icon">
+
+            <svg viewBox="0 0 52 52" fill="none">
+
+                <rect
+                        x="10"
+                        y="10"
+                        width="32"
+                        height="32"
+                        rx="2"
+                        fill="#765a36"
+                        opacity="0.5"
+                />
+
+                <path
+                        d="M38 16 A16 16 0 1 1 16 14"
+                        stroke="#d39a52"
+                        stroke-width="2"
+                        fill="none"
+                        stroke-linecap="round"
+                />
+
+                <path
+                        d="M16 14 L10 14 L14 8"
+                        stroke="#d39a52"
+                        stroke-width="2"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                />
+
+            </svg>
+
+        </div>
+
+        <h2>Drop a .nbt structure file here</h2>
+
+        <p>
+            Parsing happens entirely in your browser.
+        </p>
+
+        <button class="browse-btn" id="browse-btn">
+            Choose file…
+        </button>
+
+        <input type="file" id="file-input" accept=".nbt">
+
+    </div>
+
+    <div id="workspace">
+
+        <div class="file-bar">
+
+            <div>
+                <div class="fname" id="fname">—</div>
+                <div class="fmeta" id="fmeta">—</div>
+            </div>
+
+            <div class="actions">
+
+                <button
+                        class="btn ghost small"
+                        id="load-other-btn"
+                >
+                    Load different file
+                </button>
+
+                <button
+                        class="btn primary"
+                        id="download-btn"
+                        disabled
+                >
+                    Download rotated .nbt
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="grid2">
+
+            <div class="panel">
+
+                <h3>Layer preview</h3>
+
+                <div class="layer-controls">
+
+          <span
+                  class="layer-label"
+                  id="layer-label"
+          >
+            Y layer 0
+          </span>
+
+                    <input
+                            type="range"
+                            id="layer-slider"
+                            min="0"
+                            max="0"
+                            value="0"
+                            step="1"
+                    >
+
+                </div>
+
+                <div id="preview-canvas-wrap">
+
+                    <canvas
+                            id="preview-canvas"
+                            width="256"
+                            height="256"
+                    ></canvas>
+
+                </div>
+
+                <div class="compass">
+                    <span>N ↑ (−Z)</span>
+                    <span>E → (+X)</span>
+                </div>
+
+                <div class="preview-note">
+                    Colored cells represent blocks on the selected layer.
+                    Empty cells represent air.
+                </div>
+
+            </div>
+
+            <div>
+
+                <div
+                        class="panel"
+                        style="margin-bottom:12px;"
+                >
+
+                    <h3>Rotate</h3>
+
+                    <div class="rot-controls">
+
+                        <div class="rot-btn-row">
+
+                            <button
+                                    class="rot-btn"
+                                    id="rot-ccw90"
+                                    title="Rotate 90° counter-clockwise"
+                            >
+
+                                <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                >
+                                    <path
+                                            d="M3 12a9 9 0 1 1 3 6.7"
+                                            stroke-linecap="round"
+                                    />
+                                    <path
+                                            d="M3 8v5h5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                    />
+                                </svg>
+
+                                −90°
+
+                            </button>
+
+                            <button
+                                    class="rot-btn"
+                                    id="rot-90"
+                                    title="Rotate 90° clockwise"
+                            >
+
+                                <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                >
+                                    <path
+                                            d="M21 12a9 9 0 1 0-3 6.7"
+                                            stroke-linecap="round"
+                                    />
+                                    <path
+                                            d="M21 8v5h-5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                    />
+                                </svg>
+
+                                +90°
+
+                            </button>
+
+                        </div>
+
+                        <button
+                                class="rot-btn"
+                                id="rot-180"
+                                title="Rotate 180°"
+                                style="flex-direction:row;gap:8px;"
+                        >
+
+                            <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    style="width:16px;height:16px;"
+                            >
+                                <path
+                                        d="M21 12a9 9 0 1 0-3 6.7"
+                                        stroke-linecap="round"
+                                />
+                                <path
+                                        d="M21 8v5h-5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                />
+                            </svg>
+
+                            180°
+
+                        </button>
+
+                    </div>
+
+                    <div class="current-rot">
+                        current:
+                        <span
+                                class="deg"
+                                id="current-deg"
+                        >0°</span>
+                    </div>
+
+                    <div style="height:7px;"></div>
+
+                    <button
+                            class="reset-link"
+                            id="reset-btn"
+                            disabled
+                    >
+                        reset to original orientation
+                    </button>
+
+                </div>
+
+                <div class="panel">
+
+                    <h3>Structure</h3>
+
+                    <div
+                            class="dims"
+                            id="dims"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        Vanilla structure NBT · rotates positions, directional properties,
+        rail shape, entity yaw · gzip in / gzip out
+    </footer>
+
+</div>
+
+<script>
+    (function(){
+        "use strict";
+
+        const TAG = {
+            End:0,
+            Byte:1,
+            Short:2,
+            Int:3,
+            Long:4,
+            Float:5,
+            Double:6,
+            ByteArray:7,
+            String:8,
+            List:9,
+            Compound:10,
+            IntArray:11,
+            LongArray:12
+        };
+
+        class NbtReader {
+
+            constructor(buf) {
+                this.dv = new DataView(
+                    buf.buffer,
+                    buf.byteOffset,
+                    buf.byteLength
+                );
+
+                this.bytes = buf;
+                this.off = 0;
+            }
+
+            byte() {
+                const v =
+                    this.dv.getInt8(
+                        this.off
+                    );
+
+                this.off += 1;
+                return v;
+            }
+
+            ubyte() {
+                const v =
+                    this.dv.getUint8(
+                        this.off
+                    );
+
+                this.off += 1;
+                return v;
+            }
+
+            short() {
+                const v =
+                    this.dv.getInt16(
+                        this.off
+                    );
+
+                this.off += 2;
+                return v;
+            }
+
+            ushort() {
+                const v =
+                    this.dv.getUint16(
+                        this.off
+                    );
+
+                this.off += 2;
+                return v;
+            }
+
+            int() {
+                const v =
+                    this.dv.getInt32(
+                        this.off
+                    );
+
+                this.off += 4;
+                return v;
+            }
+
+            long() {
+                const v =
+                    this.dv.getBigInt64(
+                        this.off
+                    );
+
+                this.off += 8;
+                return v;
+            }
+
+            float() {
+                const v =
+                    this.dv.getFloat32(
+                        this.off
+                    );
+
+                this.off += 4;
+                return v;
+            }
+
+            double() {
+                const v =
+                    this.dv.getFloat64(
+                        this.off
+                    );
+
+                this.off += 8;
+                return v;
+            }
+
+            bytes_(n) {
+
+                const v =
+                    this.bytes.slice(
+                        this.off,
+                        this.off + n
+                    );
+
+                this.off += n;
+
+                return v;
+            }
+
+            string() {
+
+                const len = this.ushort();
+
+                const b =
+                    this.bytes_(len);
+
+                return new TextDecoder(
+                    "utf-8"
+                ).decode(b);
+            }
+
+            payload(type) {
+
+                switch(type) {
+
+                    case TAG.Byte:
+                        return {
+                            type,
+                            value: this.byte()
+                        };
+
+                    case TAG.Short:
+                        return {
+                            type,
+                            value: this.short()
+                        };
+
+                    case TAG.Int:
+                        return {
+                            type,
+                            value: this.int()
+                        };
+
+                    case TAG.Long:
+                        return {
+                            type,
+                            value: this.long()
+                        };
+
+                    case TAG.Float:
+                        return {
+                            type,
+                            value: this.float()
+                        };
+
+                    case TAG.Double:
+                        return {
+                            type,
+                            value: this.double()
+                        };
+
+                    case TAG.ByteArray: {
+
+                        const len =
+                            this.int();
+
+                        const arr =
+                            new Int8Array(len);
+
+                        for(let i = 0; i < len; i++) {
+                            arr[i] = this.byte();
+                        }
+
+                        return {
+                            type,
+                            value: arr
+                        };
+                    }
+
+                    case TAG.String:
+                        return {
+                            type,
+                            value: this.string()
+                        };
+
+                    case TAG.List: {
+
+                        const elemType =
+                            this.ubyte();
+
+                        const len =
+                            this.int();
+
+                        const items = [];
+
+                        for(let i = 0; i < len; i++) {
+                            items.push(
+                                this.payload(elemType)
+                            );
+                        }
+
+                        return {
+                            type,
+                            elemType,
+                            value: items
+                        };
+                    }
+
+                    case TAG.Compound: {
+
+                        const entries = [];
+
+                        while(true) {
+
+                            const t =
+                                this.ubyte();
+
+                            if(t === TAG.End)
+                                break;
+
+                            const name =
+                                this.string();
+
+                            const val =
+                                this.payload(t);
+
+                            entries.push({
+                                name,
+                                tag: val
+                            });
+                        }
+
+                        return {
+                            type,
+                            value: entries
+                        };
+                    }
+
+                    case TAG.IntArray: {
+
+                        const len =
+                            this.int();
+
+                        const arr =
+                            new Int32Array(len);
+
+                        for(let i = 0; i < len; i++) {
+                            arr[i] = this.int();
+                        }
+
+                        return {
+                            type,
+                            value: arr
+                        };
+                    }
+
+                    case TAG.LongArray: {
+
+                        const len =
+                            this.int();
+
+                        const arr =
+                            new BigInt64Array(len);
+
+                        for(let i = 0; i < len; i++) {
+                            arr[i] = this.long();
+                        }
+
+                        return {
+                            type,
+                            value: arr
+                        };
+                    }
+
+                    default:
+                        throw new Error(
+                            "Unknown NBT tag type " +
+                            type
+                        );
+                }
+            }
+
+            readRoot() {
+
+                const t =
+                    this.ubyte();
+
+                if(t !== TAG.Compound) {
+
+                    throw new Error(
+                        "Root tag is not a Compound " +
+                        "(got type " +
+                        t +
+                        ") — this may not be a structure NBT file."
+                    );
+                }
+
+                const name =
+                    this.string();
+
+                const value =
+                    this.payload(
+                        TAG.Compound
+                    );
+
+                return {
+                    name,
+                    root: value
+                };
+            }
+        }
+
+        class NbtWriter {
+
+            constructor() {
+                this.chunks = [];
+                this.len = 0;
+            }
+
+            push(u8) {
+                this.chunks.push(u8);
+                this.len += u8.length;
+            }
+
+            pushView(size, fn) {
+
+                const buf =
+                    new ArrayBuffer(size);
+
+                fn(
+                    new DataView(buf)
+                );
+
+                this.push(
+                    new Uint8Array(buf)
+                );
+            }
+
+            byte(v) {
+                this.pushView(
+                    1,
+                    dv => dv.setInt8(0, v)
+                );
+            }
+
+            ubyte(v) {
+                this.pushView(
+                    1,
+                    dv => dv.setUint8(0, v)
+                );
+            }
+
+            short(v) {
+                this.pushView(
+                    2,
+                    dv => dv.setInt16(0, v)
+                );
+            }
+
+            ushort(v) {
+                this.pushView(
+                    2,
+                    dv => dv.setUint16(0, v)
+                );
+            }
+
+            int(v) {
+                this.pushView(
+                    4,
+                    dv => dv.setInt32(0, v)
+                );
+            }
+
+            long(v) {
+                this.pushView(
+                    8,
+                    dv => dv.setBigInt64(0, v)
+                );
+            }
+
+            float(v) {
+                this.pushView(
+                    4,
+                    dv => dv.setFloat32(0, v)
+                );
+            }
+
+            double(v) {
+                this.pushView(
+                    8,
+                    dv => dv.setFloat64(0, v)
+                );
+            }
+
+            string(s) {
+
+                const enc =
+                    new TextEncoder().encode(s);
+
+                this.ushort(
+                    enc.length
+                );
+
+                this.push(enc);
+            }
+
+            payload(node) {
+
+                const {
+                    type,
+                    value
+                } = node;
+
+                switch(type) {
+
+                    case TAG.Byte:
+                        this.byte(value);
+                        break;
+
+                    case TAG.Short:
+                        this.short(value);
+                        break;
+
+                    case TAG.Int:
+                        this.int(value);
+                        break;
+
+                    case TAG.Long:
+                        this.long(value);
+                        break;
+
+                    case TAG.Float:
+                        this.float(value);
+                        break;
+
+                    case TAG.Double:
+                        this.double(value);
+                        break;
+
+                    case TAG.ByteArray:
+
+                        this.int(
+                            value.length
+                        );
+
+                        for(
+                            let i = 0;
+                            i < value.length;
+                            i++
+                        ) {
+                            this.byte(value[i]);
+                        }
+
+                        break;
+
+                    case TAG.String:
+                        this.string(value);
+                        break;
+
+                    case TAG.List:
+
+                        this.ubyte(
+                            node.elemType
+                        );
+
+                        this.int(
+                            value.length
+                        );
+
+                        for(
+                            const item
+                            of value
+                            ) {
+                            this.payload(item);
+                        }
+
+                        break;
+
+                    case TAG.Compound:
+
+                        for(
+                            const entry
+                            of value
+                            ) {
+
+                            this.ubyte(
+                                entry.tag.type
+                            );
+
+                            this.string(
+                                entry.name
+                            );
+
+                            this.payload(
+                                entry.tag
+                            );
+                        }
+
+                        this.ubyte(
+                            TAG.End
+                        );
+
+                        break;
+
+                    case TAG.IntArray:
+
+                        this.int(
+                            value.length
+                        );
+
+                        for(
+                            let i = 0;
+                            i < value.length;
+                            i++
+                        ) {
+                            this.int(
+                                value[i]
+                            );
+                        }
+
+                        break;
+
+                    case TAG.LongArray:
+
+                        this.int(
+                            value.length
+                        );
+
+                        for(
+                            let i = 0;
+                            i < value.length;
+                            i++
+                        ) {
+                            this.long(
+                                value[i]
+                            );
+                        }
+
+                        break;
+
+                    default:
+                        throw new Error(
+                            "Unknown NBT tag type on write " +
+                            type
+                        );
+                }
+            }
+
+            writeRoot(
+                name,
+                rootTag
+            ) {
+
+                this.ubyte(
+                    TAG.Compound
+                );
+
+                this.string(name);
+
+                this.payload(
+                    rootTag
+                );
+            }
+
+            toBytes() {
+
+                const out =
+                    new Uint8Array(
+                        this.len
+                    );
+
+                let o = 0;
+
+                for(
+                    const c
+                    of this.chunks
+                    ) {
+
+                    out.set(
+                        c,
+                        o
+                    );
+
+                    o += c.length;
+                }
+
+                return out;
+            }
+        }
+
+        function cget(
+            compound,
+            name
+        ) {
+
+            return compound.value.find(
+                e => e.name === name
+            );
+        }
+
+        const DIR_CYCLE = [
+            "north",
+            "east",
+            "south",
+            "west"
+        ];
+
+        function rotateDirToken(tok) {
+
+            const i =
+                DIR_CYCLE.indexOf(tok);
+
+            if(i === -1)
+                return tok;
+
+            return DIR_CYCLE[
+            (i + 1) % 4
+                ];
+        }
+
+        const RAIL_CW = {
+
+            north_south: "east_west",
+            east_west: "north_south",
+
+            ascending_north: "ascending_east",
+            ascending_east: "ascending_south",
+            ascending_south: "ascending_west",
+            ascending_west: "ascending_north",
+
+            south_east: "south_west",
+            south_west: "north_west",
+            north_west: "north_east",
+            north_east: "south_east"
+        };
+
+        function rotatePropertiesOnce(
+            propsCompound
+        ) {
+
+            const entries =
+                propsCompound.value;
+
+            const cardinalNames =
+                new Set([
+                    "north",
+                    "south",
+                    "east",
+                    "west"
+                ]);
+
+            const cardinalEntries =
+                entries.filter(
+                    e =>
+                        cardinalNames.has(
+                            e.name
+                        )
+                );
+
+            const otherEntries =
+                entries.filter(
+                    e =>
+                        !cardinalNames.has(
+                            e.name
+                        )
+                );
+
+            for(
+                const e
+                of otherEntries
+                ) {
+
+                const name =
+                    e.name;
+
+                const v =
+                    e.tag.value;
+
+                if(name === "facing") {
+
+                    e.tag.value =
+                        rotateDirToken(v);
+
+                } else if(name === "axis") {
+
+                    if(v === "x")
+                        e.tag.value = "z";
+
+                    else if(v === "z")
+                        e.tag.value = "x";
+
+                } else if(name === "rotation") {
+
+                    const n =
+                        parseInt(v, 10);
+
+                    if(!isNaN(n)) {
+
+                        e.tag.value =
+                            String(
+                                (n + 4) % 16
+                            );
+                    }
+
+                } else if(name === "orientation") {
+
+                    e.tag.value =
+                        v
+                            .split("_")
+                            .map(rotateDirToken)
+                            .join("_");
+
+                } else if(
+                    name === "shape" &&
+                    Object.prototype.hasOwnProperty.call(
+                        RAIL_CW,
+                        v
+                    )
+                ) {
+
+                    e.tag.value =
+                        RAIL_CW[v];
+                }
+            }
+
+            if(cardinalEntries.length) {
+
+                const rotated =
+                    cardinalEntries.map(
+                        e => ({
+                            name:
+                                rotateDirToken(
+                                    e.name
+                                ),
+                            tag: e.tag
+                        })
+                    );
+
+                propsCompound.value = [
+                    ...otherEntries,
+                    ...rotated
+                ];
+
+            } else {
+
+                propsCompound.value =
+                    otherEntries;
+            }
+        }
+
+        function collectPaletteLists(
+            root
+        ) {
+
+            const lists = [];
+
+            const pal =
+                cget(root, "palette");
+
+            if(
+                pal &&
+                pal.tag.type === TAG.List
+            ) {
+                lists.push(pal.tag);
+            }
+
+            const pals =
+                cget(root, "palettes");
+
+            if(
+                pals &&
+                pals.tag.type === TAG.List
+            ) {
+
+                for(
+                    const sub
+                    of pals.tag.value
+                    ) {
+
+                    if(sub.type === TAG.List)
+                        lists.push(sub);
+                }
+            }
+
+            return lists;
+        }
+
+        function wrapYaw(y) {
+
+            return (
+                (
+                    (y + 180) % 360 +
+                    360
+                ) % 360
+            ) - 180;
+        }
+
+        function rotateOnce(root) {
+
+            const sizeEntry =
+                cget(root, "size");
+
+            if(!sizeEntry) {
+
+                throw new Error(
+                    "No 'size' tag found — this doesn't look like a vanilla structure NBT file."
+                );
+            }
+
+            const sx =
+                sizeEntry.tag.value[0].value;
+
+            const sy =
+                sizeEntry.tag.value[1].value;
+
+            const sz =
+                sizeEntry.tag.value[2].value;
+
+            for(
+                const list
+                of collectPaletteLists(root)
+                ) {
+
+                for(
+                    const entry
+                    of list.value
+                    ) {
+
+                    const props =
+                        cget(entry, "Properties");
+
+                    if(
+                        props &&
+                        props.tag.type === TAG.Compound
+                    ) {
+
+                        rotatePropertiesOnce(
+                            props.tag
+                        );
+                    }
+                }
+            }
+
+            const blocksEntry =
+                cget(root, "blocks");
+
+            if(
+                blocksEntry &&
+                blocksEntry.tag.type === TAG.List
+            ) {
+
+                for(
+                    const b
+                    of blocksEntry.tag.value
+                    ) {
+
+                    const posEntry =
+                        cget(b, "pos");
+
+                    const x =
+                        posEntry.tag.value[0].value;
+
+                    const y =
+                        posEntry.tag.value[1].value;
+
+                    const z =
+                        posEntry.tag.value[2].value;
+
+                    posEntry.tag.value[0].value =
+                        sz - 1 - z;
+
+                    posEntry.tag.value[1].value =
+                        y;
+
+                    posEntry.tag.value[2].value =
+                        x;
+                }
+            }
+
+            const entitiesEntry =
+                cget(root, "entities");
+
+            if(
+                entitiesEntry &&
+                entitiesEntry.tag.type === TAG.List
+            ) {
+
+                for(
+                    const ent
+                    of entitiesEntry.tag.value
+                    ) {
+
+                    const posEntry =
+                        cget(ent, "pos");
+
+                    if(posEntry) {
+
+                        const x =
+                            posEntry.tag.value[0].value;
+
+                        const y =
+                            posEntry.tag.value[1].value;
+
+                        const z =
+                            posEntry.tag.value[2].value;
+
+                        posEntry.tag.value[0].value =
+                            sz - z;
+
+                        posEntry.tag.value[1].value =
+                            y;
+
+                        posEntry.tag.value[2].value =
+                            x;
+                    }
+
+                    const blockPosEntry =
+                        cget(ent, "blockPos");
+
+                    if(blockPosEntry) {
+
+                        const x =
+                            blockPosEntry.tag.value[0].value;
+
+                        const y =
+                            blockPosEntry.tag.value[1].value;
+
+                        const z =
+                            blockPosEntry.tag.value[2].value;
+
+                        blockPosEntry.tag.value[0].value =
+                            sz - 1 - z;
+
+                        blockPosEntry.tag.value[1].value =
+                            y;
+
+                        blockPosEntry.tag.value[2].value =
+                            x;
+                    }
+
+                    const nbtEntry =
+                        cget(ent, "nbt");
+
+                    if(
+                        nbtEntry &&
+                        nbtEntry.tag.type === TAG.Compound
+                    ) {
+
+                        const rot =
+                            cget(
+                                nbtEntry.tag,
+                                "Rotation"
+                            );
+
+                        if(
+                            rot &&
+                            rot.tag.type === TAG.List &&
+                            rot.tag.value.length >= 1
+                        ) {
+
+                            rot.tag.value[0].value =
+                                wrapYaw(
+                                    rot.tag.value[0].value +
+                                    90
+                                );
+                        }
+                    }
+                }
+            }
+
+            sizeEntry.tag.value[0].value =
+                sz;
+
+            sizeEntry.tag.value[2].value =
+                sx;
+        }
+
+        function rotateStructure(
+            root,
+            steps
+        ) {
+
+            const s =
+                ((steps % 4) + 4) % 4;
+
+            for(
+                let i = 0;
+                i < s;
+                i++
+            ) {
+
+                rotateOnce(root);
+            }
+        }
+
+        function extractGrid(root) {
+
+            const sizeEntry =
+                cget(root, "size");
+
+            const sx =
+                sizeEntry.tag.value[0].value;
+
+            const sy =
+                sizeEntry.tag.value[1].value;
+
+            const sz =
+                sizeEntry.tag.value[2].value;
+
+            const pal =
+                cget(root, "palette");
+
+            const names =
+                pal
+                    ? pal.tag.value.map(
+                        e => {
+
+                            const n =
+                                cget(e, "Name");
+
+                            return n
+                                ? n.tag.value
+                                : "?";
+                        }
+                    )
+                    : [];
+
+            const cells =
+                new Map();
+
+            const blocksEntry =
+                cget(root, "blocks");
+
+            if(
+                blocksEntry &&
+                blocksEntry.tag.type === TAG.List
+            ) {
+
+                for(
+                    const b
+                    of blocksEntry.tag.value
+                    ) {
+
+                    const pos =
+                        cget(
+                            b,
+                            "pos"
+                        ).tag.value.map(
+                            t => t.value
+                        );
+
+                    const state =
+                        cget(
+                            b,
+                            "state"
+                        ).tag.value;
+
+                    cells.set(
+                        pos[0] + "," +
+                        pos[1] + "," +
+                        pos[2],
+                        names[state] || "?"
+                    );
+                }
+            }
+
+            return {
+                sx,
+                sy,
+                sz,
+                cells
+            };
+        }
+
+        let state = {
+
+            fileName: null,
+            rootName: "",
+            rootCompound: null,
+
+            totalRotation: 0,
+            layerY: 0
+        };
+
+        const el = {
+
+            dropzone:
+                document.getElementById("dropzone"),
+
+            fileInput:
+                document.getElementById("file-input"),
+
+            browseBtn:
+                document.getElementById("browse-btn"),
+
+            status:
+                document.getElementById("status"),
+
+            workspace:
+                document.getElementById("workspace"),
+
+            fname:
+                document.getElementById("fname"),
+
+            fmeta:
+                document.getElementById("fmeta"),
+
+            loadOtherBtn:
+                document.getElementById("load-other-btn"),
+
+            downloadBtn:
+                document.getElementById("download-btn"),
+
+            dims:
+                document.getElementById("dims"),
+
+            currentDeg:
+                document.getElementById("current-deg"),
+
+            resetBtn:
+                document.getElementById("reset-btn"),
+
+            layerSlider:
+                document.getElementById(
+                    "layer-slider"
+                ),
+
+            layerLabel:
+                document.getElementById(
+                    "layer-label"
+                ),
+
+            canvas:
+                document.getElementById(
+                    "preview-canvas"
+                ),
+
+            rot90:
+                document.getElementById(
+                    "rot-90"
+                ),
+
+            rotCcw90:
+                document.getElementById(
+                    "rot-ccw90"
+                ),
+
+            rot180:
+                document.getElementById(
+                    "rot-180"
+                )
+        };
+
+        const ctx =
+            el.canvas.getContext("2d");
+
+        let originalBytes = null;
+
+        function showStatus(
+            msg,
+            kind
+        ) {
+
+            el.status.textContent =
+                msg;
+
+            el.status.className =
+                "show " +
+                (kind || "info");
+        }
+
+        function clearStatus() {
+            el.status.className = "";
+        }
+
+        function swatchColor(name) {
+
+            let h = 0;
+
+            for(
+                let i = 0;
+                i < name.length;
+                i++
+            ) {
+
+                h =
+                    (h * 31 +
+                        name.charCodeAt(i))
+                    >>> 0;
+            }
+
+            const hue =
+                h % 360;
+
+            const sat =
+                42 + (h % 20);
+
+            const light =
+                38 + (h % 14);
+
+            return `
+      hsl(
+        ${hue}
+        ${sat}%
+        ${light}%
+      )
+    `;
+        }
+
+        async function loadFile(file) {
+
+            clearStatus();
+
+            showStatus(
+                "Reading " +
+                file.name +
+                "…",
+                "info"
+            );
+
+            try {
+
+                const buf =
+                    new Uint8Array(
+                        await file.arrayBuffer()
+                    );
+
+                let raw;
+
+                if(
+                    buf.length >= 2 &&
+                    buf[0] === 0x1f &&
+                    buf[1] === 0x8b
+                ) {
+
+                    raw =
+                        pako.inflate(buf);
+
+                } else {
+
+                    raw = buf;
+                }
+
+                originalBytes =
+                    raw.slice();
+
+                const reader =
+                    new NbtReader(raw);
+
+                const {
+                    name,
+                    root
+                } =
+                    reader.readRoot();
+
+                if(!cget(root, "size")) {
+
+                    throw new Error(
+                        "No 'size' tag found — " +
+                        "this doesn't look like a vanilla structure NBT file."
+                    );
+                }
+
+                if(!cget(root, "palette")) {
+
+                    throw new Error(
+                        "No 'palette' tag found — " +
+                        "this doesn't look like a vanilla structure NBT file."
+                    );
+                }
+
+                state.fileName =
+                    file.name;
+
+                state.rootName =
+                    name;
+
+                state.rootCompound =
+                    root;
+
+                state.totalRotation =
+                    0;
+
+                el.fname.textContent =
+                    file.name;
+
+                el.dropzone.style.display =
+                    "none";
+
+                el.workspace.classList.add(
+                    "show"
+                );
+
+                el.downloadBtn.disabled =
+                    true;
+
+                setupLayerSlider();
+                updateDimsAndMeta();
+                renderPreview();
+
+                showStatus(
+                    "Loaded " +
+                    file.name +
+                    ".",
+                    "success"
+                );
+
+            } catch(err) {
+
+                console.error(err);
+
+                showStatus(
+                    "Couldn't parse this file: " +
+                    err.message,
+                    "error"
+                );
+            }
+        }
+
+        function setupLayerSlider() {
+
+            const grid =
+                extractGrid(
+                    state.rootCompound
+                );
+
+            el.layerSlider.min = 0;
+
+            el.layerSlider.max =
+                Math.max(
+                    0,
+                    grid.sy - 1
+                );
+
+            if(
+                state.layerY >
+                grid.sy - 1
+            ) {
+
+                state.layerY = 0;
+            }
+
+            el.layerSlider.value =
+                state.layerY;
+
+            el.layerLabel.textContent =
+                "Y layer " +
+                state.layerY;
+        }
+
+        function updateDimsAndMeta() {
+
+            const grid =
+                extractGrid(
+                    state.rootCompound
+                );
+
+            el.dims.innerHTML =
+                `size: <b>${grid.sx} × ${grid.sy} × ${grid.sz}</b> (X×Y×Z)<br>` +
+                `unique blocks: <b>${new Set([...grid.cells.values()]).size}</b><br>` +
+                `block entries: <b>${grid.cells.size}</b>`;
+
+            el.fmeta.textContent =
+                grid.sx +
+                "×" +
+                grid.sy +
+                "×" +
+                grid.sz +
+                " · rotated " +
+                state.totalRotation +
+                "°";
+
+            el.currentDeg.textContent =
+                state.totalRotation +
+                "°";
+
+            el.resetBtn.disabled =
+                state.totalRotation === 0;
+        }
+
+        function renderPreview() {
+
+            const grid =
+                extractGrid(
+                    state.rootCompound
+                );
+
+            const y =
+                Math.min(
+                    state.layerY,
+                    grid.sy - 1
+                );
+
+            const cell =
+                Math.max(
+                    4,
+                    Math.min(
+                        28,
+                        Math.floor(
+                            240 /
+                            Math.max(
+                                grid.sx,
+                                grid.sz
+                            )
+                        )
+                    )
+                );
+
+            const w =
+                grid.sx * cell;
+
+            const h =
+                grid.sz * cell;
+
+            el.canvas.width = w;
+            el.canvas.height = h;
+
+            ctx.clearRect(
+                0,
+                0,
+                w,
+                h
+            );
+
+            for(
+                let x = 0;
+                x < grid.sx;
+                x++
+            ) {
+
+                for(
+                    let z = 0;
+                    z < grid.sz;
+                    z++
+                ) {
+
+                    const name =
+                        grid.cells.get(
+                            x +
+                            "," +
+                            y +
+                            "," +
+                            z
+                        );
+
+                    if(
+                        name &&
+                        !/(^|_)air$/.test(
+                            name
+                                .split(":")
+                                .pop()
+                        )
+                    ) {
+
+                        ctx.fillStyle =
+                            swatchColor(name);
+
+                        ctx.fillRect(
+                            x * cell,
+                            z * cell,
+                            cell - 1,
+                            cell - 1
+                        );
+                    }
+                }
+            }
+        }
+
+        function rotate(steps) {
+
+            try {
+
+                rotateStructure(
+                    state.rootCompound,
+                    steps
+                );
+
+                state.totalRotation =
+                    (
+                        (
+                            state.totalRotation +
+                            steps * 90
+                        ) % 360 +
+                        360
+                    ) % 360;
+
+                state.layerY = 0;
+
+                setupLayerSlider();
+                updateDimsAndMeta();
+                renderPreview();
+
+                el.downloadBtn.disabled =
+                    state.totalRotation === 0;
+
+                showStatus(
+                    "Rotated to " +
+                    state.totalRotation +
+                    "°.",
+                    "success"
+                );
+
+            } catch(err) {
+
+                console.error(err);
+
+                showStatus(
+                    "Couldn't rotate: " +
+                    err.message,
+                    "error"
+                );
+            }
+        }
+
+        function resetRotation() {
+
+            if(!originalBytes)
+                return;
+
+            const reader =
+                new NbtReader(
+                    originalBytes.slice()
+                );
+
+            const {
+                name,
+                root
+            } =
+                reader.readRoot();
+
+            state.rootName =
+                name;
+
+            state.rootCompound =
+                root;
+
+            state.totalRotation =
+                0;
+
+            state.layerY =
+                0;
+
+            setupLayerSlider();
+            updateDimsAndMeta();
+            renderPreview();
+
+            el.downloadBtn.disabled =
+                true;
+
+            showStatus(
+                "Reset to original orientation.",
+                "info"
+            );
+        }
+
+        function downloadRotated() {
+
+            try {
+
+                const writer =
+                    new NbtWriter();
+
+                writer.writeRoot(
+                    state.rootName,
+                    state.rootCompound
+                );
+
+                const rawBytes =
+                    writer.toBytes();
+
+                const gz =
+                    pako.gzip(rawBytes);
+
+                const base =
+                    state.fileName.replace(
+                        /\.nbt$/i,
+                        ""
+                    );
+
+                const outName =
+                    base +
+                    "_rot" +
+                    state.totalRotation +
+                    ".nbt";
+
+                const blob =
+                    new Blob(
+                        [gz],
+                        {
+                            type:
+                                "application/octet-stream"
+                        }
+                    );
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+                const a =
+                    document.createElement(
+                        "a"
+                    );
+
+                a.href = url;
+                a.download = outName;
+
+                document.body.appendChild(a);
+
+                a.click();
+
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(url);
+
+                showStatus(
+                    "Downloaded " +
+                    outName,
+                    "success"
+                );
+
+            } catch(err) {
+
+                console.error(err);
+
+                showStatus(
+                    "Failed to export: " +
+                    err.message,
+                    "error"
+                );
+            }
+        }
+
+        function resetToDropzone() {
+
+            state = {
+                fileName: null,
+                rootName: "",
+                rootCompound: null,
+                totalRotation: 0,
+                layerY: 0
+            };
+
+            originalBytes = null;
+
+            el.workspace.classList.remove(
+                "show"
+            );
+
+            el.dropzone.style.display =
+                "block";
+
+            clearStatus();
+
+            el.fileInput.value = "";
+        }
+
+        el.browseBtn.addEventListener(
+            "click",
+            () =>
+                el.fileInput.click()
+        );
+
+        el.dropzone.addEventListener(
+            "click",
+            e => {
+
+                if(
+                    e.target ===
+                    el.browseBtn
+                ) {
+                    return;
+                }
+
+                el.fileInput.click();
+            }
+        );
+
+        el.fileInput.addEventListener(
+            "change",
+            e => {
+
+                if(
+                    e.target.files &&
+                    e.target.files[0]
+                ) {
+
+                    loadFile(
+                        e.target.files[0]
+                    );
+                }
+            }
+        );
+
+        ["dragenter", "dragover"]
+            .forEach(evt => {
+
+                el.dropzone.addEventListener(
+                    evt,
+                    e => {
+
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        el.dropzone.classList.add(
+                            "drag"
+                        );
+                    }
+                );
+            });
+
+        ["dragleave", "drop"]
+            .forEach(evt => {
+
+                el.dropzone.addEventListener(
+                    evt,
+                    e => {
+
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        el.dropzone.classList.remove(
+                            "drag"
+                        );
+                    }
+                );
+            });
+
+        el.dropzone.addEventListener(
+            "drop",
+            e => {
+
+                const file =
+                    e.dataTransfer.files &&
+                    e.dataTransfer.files[0];
+
+                if(file) {
+                    loadFile(file);
+                }
+            }
+        );
+
+        el.loadOtherBtn.addEventListener(
+            "click",
+            resetToDropzone
+        );
+
+        el.downloadBtn.addEventListener(
+            "click",
+            downloadRotated
+        );
+
+        el.resetBtn.addEventListener(
+            "click",
+            resetRotation
+        );
+
+        el.rot90.addEventListener(
+            "click",
+            () => rotate(1)
+        );
+
+        el.rotCcw90.addEventListener(
+            "click",
+            () => rotate(-1)
+        );
+
+        el.rot180.addEventListener(
+            "click",
+            () => rotate(2)
+        );
+
+        el.layerSlider.addEventListener(
+            "input",
+            e => {
+
+                state.layerY =
+                    parseInt(
+                        e.target.value,
+                        10
+                    );
+
+                el.layerLabel.textContent =
+                    "Y layer " +
+                    state.layerY;
+
+                renderPreview();
+            }
+        );
+
+    })();
+</script>
+
+</body>
+</html>
